@@ -1,0 +1,57 @@
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: employee-nginx:1.1
+    ports:
+      - "8080:8080"
+    networks:
+      - frontend-emp-net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: employee-backend:1.1
+    env_file:
+      - .env.backend
+    networks:
+      - frontend-emp-net
+      - backend-emp-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    env_file:
+      - .env.postgres
+    volumes:
+      - employee-postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend-emp-net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  frontend-emp-net:
+    external: true
+    name: frontend-emp-net
+
+  backend-emp-net:
+    external: true
+    name: backend-emp-net
+    
+volumes:
+  employee-postgres-data:
+    name: employee-postgres-data
+    external: true

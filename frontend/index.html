@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+</head>
+<body>
+    <h1>Employee Management System</h1>
+
+    <button onclick="loadEmployees()">Show Employees</button>
+
+    <ul id="employees"></ul>
+
+    <script>
+        async function loadEmployees() {
+            const response = await fetch("/api/employees");
+            const employees = await response.json();
+
+            const list = document.getElementById("employees");
+            list.innerHTML = "";
+
+            employees.forEach(employee => {
+                const item = document.createElement("li");
+                item.textContent = `${employee.name} - ${employee.role}`;
+                list.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
